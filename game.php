@@ -7,7 +7,7 @@ include 'header.php';
 <body>
   <div class="row-fluid title">
     <header>
-        <h1 style="margin-bottom: 20px">Tic Tac Toe 
+        <h1 style="margin-bottom: 20px"><a href="/index.php" style="color:#000" title="Go home">Tic Tac Toe</a> 
           <small class="label label-info" style="margin-left: 10px">
             Copy the link above to invite an opponent!
           </small> 
@@ -15,7 +15,7 @@ include 'header.php';
             <a href="#" id="debug">toggle console msg</a>
           </small>
         </h1>
-        <div class="btn-group" style="margin-left: 0; margin-right: 10px; float: left">
+        <div class="btn-group" id="choose-color" style="margin-left: 0; margin-right: 10px; float: left">
           <a class="btn" href="#">Your color</a>
           <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>
           <ul class="dropdown-menu color-choices">

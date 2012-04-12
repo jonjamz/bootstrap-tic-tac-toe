@@ -19,6 +19,8 @@ $(document).ready(function () {
    *  lastTurn keeps track of the most recent turn
    *  lastPlayer keeps track of when a second player enters the game
    *  gameOver will be 1 when there has been a winner
+   *  spectator lets you watch without being able to play
+   *  firstPoll turns to 1 after the first poll
    *  =============================== */
   var debug = 0,
     turn,
@@ -29,7 +31,7 @@ $(document).ready(function () {
     myXo,
     oppXo,
     curSquare,
-    myColorClass,
+    myColorClass = undefined,
     oppColorClass,
     myUserName = undefined,
     oppUserName = "Opponent",
@@ -38,7 +40,9 @@ $(document).ready(function () {
     command,
     lastTurn,
     lastPlayer = 0,
-    gameOver = 0;
+    gameOver = 0,
+    spectator = 0,
+    firstPoll = 0;
   // Colors as Bootstrap CSS Classes
   var colorClasses = {
     first:  "btn btn-primary", 
@@ -55,10 +59,11 @@ $(document).ready(function () {
    *  updateBoard() pushes board updates to the DOM after a server response
    *  pushUser() pushes the current state of the user to the userState object
    *  claimSquare() claims a square for a player
-   *  claimColor() claims a color for a player
+   *  claimColor() claims a color for a player, updateColor() updates the color
    *  addOppUserName() updates the opponent's username in the DOM
    *  addMyUserName() updates the current player's username in the DOM
    *  showMessage() and playerTurn() display messages across the bottom of the screen
+   *  spectate() sets up the environment for spectator mode
    *  =============================== */
   function makeXo() {
     if (type === 0) {
@@ -98,9 +103,8 @@ $(document).ready(function () {
       curSquare.attr("class", "span3 sq " + whoColorClass);
       curSquare.attr("data-xo", val);
       curSquare.attr("data-taken", "taken");
-      $("#your-name").attr("class", myColorClass);
-      $("#opponent-name").attr("class", oppColorClass);
     });
+    updateColor();
   }
   // Serialize the state of the current user
   function pushUser() {
@@ -119,7 +123,11 @@ $(document).ready(function () {
     myColorClass = colorClasses[key];
     $("#your-name").attr("class", myColorClass);
     $('[data-xo="' + myXo + '"]').attr("class", "span3 sq " + myColorClass);
-    //alert(myColorClass);
+  }
+  // Update the current user's color when received from db
+  function updateColor() {
+    $("#your-name").attr("class", myColorClass);
+    $("#opponent-name").attr("class", oppColorClass);
   }
   // Add an opponent's updated username to the DOM
   function addOppUserName() {
@@ -135,8 +143,6 @@ $(document).ready(function () {
       .stop(true)
       .fadeIn(1000)
       .html(message)
-      .delay(5000)
-      .fadeOut(1000);
   }
   // Messages about whose turn it is
   function playerTurn() {
@@ -149,38 +155,57 @@ $(document).ready(function () {
     }
     showMessage(message);
   }
+  // Initiate spectator mode
+  function spectate() {
+    spectator = 1;
+    turn = 0;
+    showMessage("You are a spectator");
+    $("#choose-color").remove();
+    $("#your-name").attr("disabled", "disabled");
+  }
   //---------------------------------
   /*  GAME TRIGGERS
    *  =============================== */
   $(".game-container").on("click", ".sq", function() {
-    if (turn === 1) {
-      if ($(this).attr("data-taken") !== "taken") {
-        claimSquare($(this).attr("data-sq"));
-        pushBoard();
+    if (spectator === 0) {
+      if (turn === 1) {
+        if (myColorClass !== undefined) {
+          if ($(this).attr("data-taken") !== "taken") {
+            claimSquare($(this).attr("data-sq"));
+            pushBoard();
+          }
+          else {
+            showMessage("Square taken!");
+          }
+        }
+        else {
+          showMessage("Please choose a color!");
+        }
       }
       else {
-        alert("Square taken!");
+        showMessage("It's not your turn!");
       }
-    }
-    else {
-      alert("It's not your turn!");
     }
     return false;
   });
   // Claim a color if not taken
   $(".color-choices").on("click", "a", function() {
-    var colorKey = $(this).attr("data-colorKey");
-    if(colorClasses[colorKey] === oppColorClass) {
-      alert("Can't take the opponent's color!");
-    }
-    else {
-      claimColor(colorKey);
+    if (spectator === 0) {
+      var colorKey = $(this).attr("data-colorKey");
+      if(colorClasses[colorKey] === oppColorClass) {
+        showMessage("Can't take the opponent's color!");
+      }
+      else {
+        claimColor(colorKey);
+      }
     }
     return false;
   });
   // Change name variable on key up
   $("#your-name").keyup(function() {
-    myUserName = $(this).val();
+    if (spectator === 0) {
+      myUserName = $(this).val();
+    }
   });
   // Debug toggle
   $("#debug").click(function() {
@@ -196,16 +221,22 @@ $(document).ready(function () {
    *  =============================== */
   function poll() {
     // Serialize user info into a variable to send
-    pushUser();
+    if (firstPoll === 1) {
+      pushUser();
+    }
     // Add current turn state to lastTurn
     lastTurn = turn;
     // If it's your turn, it's ok to post board updates
-    if (turn === 1) {
+    if (turn === 1 && spectator === 0) {
       command = "update";
     }
     // If you just went, this flags to change turns
-    else if (turn === 2) {
+    else if (turn === 2 && spectator === 0) {
       command = "switch";
+    }
+    // Is it spectator mode?
+    else if (spectator === 1) {
+      command = "spectate";
     }
     // If it's not your turn, just receive
     else {
@@ -223,6 +254,7 @@ $(document).ready(function () {
         console.log("i am player " + type);
         console.log("turn is " + turn);
         console.log("command is " + command);
+        console.log("spectator is " + spectator);
         console.log(JSON.stringify(data));
       }
       // If our type is 0, player_1_state is the current user's 
@@ -231,7 +263,7 @@ $(document).ready(function () {
       if (type === 0) {
         myState = data.player_1_state;
         oppState = data.player_2_state;
-        if (data.player_2_state && lastPlayer === 0) {
+        if (data.player_2_state.type === "1" && lastPlayer === 0 && spectator === 0) {
           showMessage("Player 2 has entered the game!");
           lastPlayer = 1;
         }
@@ -242,7 +274,7 @@ $(document).ready(function () {
       }
       // Update turn
       if (myState.turn) {
-        if (myState.turn === "2") {
+        if (myState.turn === "2" || spectator === 1) {
           turn = 0;
         }
         else {
@@ -250,7 +282,7 @@ $(document).ready(function () {
         }
       } 
       else {
-        if (type === 0) {
+        if (type === 0 && spectator === 0) {
           turn = 1;
         } 
         else {
@@ -261,12 +293,14 @@ $(document).ready(function () {
       if (myState.turn === "1" && lastTurn === 0) {
         playerTurn();
       }
-      // Establish colors for both players
+      // Establish colors for both players 
       if (oppState.color) {
       	oppColorClass = oppState.color;
       }
       if (myState.color) {
-        myColorClass = myState.color;
+        if (myColorClass === undefined) {
+          myColorClass = myState.color;
+        }
       }
       // Push everything to the board
       if (data.board_state) {
@@ -297,7 +331,7 @@ $(document).ready(function () {
           winnerName = oppUserName;
         }
         if (gameOver === 0) {
-          alert("Game over! " + winnerName + " has won the match!");
+          showMessage("Game over! " + winnerName + " has won the match!");
         }
         gameOver = 1;
       }
@@ -306,6 +340,8 @@ $(document).ready(function () {
     if (gameOver === 0) {
       setTimeout(poll,time);
     }
+    // Set firstPoll
+    firstPoll = 1;
   }
   // On landing, check if the game exists, and if there is already a player. 
   // If the game doesn't exist, display error and return to home page
@@ -328,14 +364,10 @@ $(document).ready(function () {
       }
       else if (data.player === "third") {
         // Redirect home
-        window.location.href = "/kicked.php";
-      }
-      // Start off with a color
-      if (type === 0) {
-        claimColor("first");
-      }
-      else if (type === 1) {
-        claimColor("second");
+        // window.location.href = "/kicked.php";
+        //--> or...
+        // Start spectator mode
+        spectate();
       }
       // Make xo
       makeXo();
