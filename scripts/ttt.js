@@ -85,7 +85,6 @@ $(document).ready(function () {
       addState[dtsq] = player;
       $.extend(boardState, addState);
     });
-    turn = 2;
     console.log("turn has been changed to " + turn);
     playerTurn();
   }
@@ -140,7 +139,7 @@ $(document).ready(function () {
   // Show and fade an alert box with message
   function showMessage(message) {
     $(".message")
-      .stop(true)
+      .stop(true, true)
       .fadeIn(1000)
       .html(message)
   }
@@ -173,6 +172,7 @@ $(document).ready(function () {
           if ($(this).attr("data-taken") !== "taken") {
             claimSquare($(this).attr("data-sq"));
             pushBoard();
+            turn = 2;
           }
           else {
             showMessage("Square taken!");
@@ -290,7 +290,9 @@ $(document).ready(function () {
         }
       }
       // Show message about whose turn it is
-      playerTurn();
+      if (firstPoll === 0) {
+        playerTurn();
+      }
       // Establish colors for both players 
       if (oppState.color) {
       	oppColorClass = oppState.color;
