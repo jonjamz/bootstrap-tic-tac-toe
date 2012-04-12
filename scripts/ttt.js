@@ -293,7 +293,7 @@ $(document).ready(function () {
         gameOver = 1;
         var winnerName;
         if ((type === 0 && data.winner === "0") || (type === 1 && data.winner === "1")) {
-          winnerName = "You";
+          winnerName = myUserName;
         } else {
           winnerName = oppUserName;
         }
