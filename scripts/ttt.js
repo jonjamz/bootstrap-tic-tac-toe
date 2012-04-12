@@ -280,7 +280,7 @@ $(document).ready(function () {
         addOppUserName();
       }
       if (myState.username) {
-        if(myUserName === undefined) {
+        if (myUserName === undefined) {
           myUserName = myState.username;
           addMyUserName();
         }
@@ -290,14 +290,16 @@ $(document).ready(function () {
       }
       // If there's a winner, end the game
       if (data.winner === "0" || data.winner === "1") {
-        gameOver = 1;
         var winnerName;
         if ((type === 0 && data.winner === "0") || (type === 1 && data.winner === "1")) {
           winnerName = myUserName;
         } else {
           winnerName = oppUserName;
         }
-        alert("Game over! " + winnerName + " has won the match!");
+        if (gameOver === 0) {
+          alert("Game over! " + winnerName + " has won the match!");
+        }
+        gameOver = 1;
       }
     }, "json");
     // Start it all over again if the game's not over!

@@ -1,31 +1,9 @@
 <?php
 
-// Start session, create nonce
-session_start();
-$nnc = md5(session_id()); 
-$_SESSION["nnc"] = $nnc;
+include 'header.php';
 
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-  <title>Tic Tac Toe Basic</title>
-  <link rel="stylesheet" type="text/css" href="/styles/bootstrap.css">
-  <link rel="stylesheet" type="text/css" href="/styles/ttt.css">
-  <script src="/scripts/jquery.min.js"></script>
-  <script src="/scripts/bootstrap.min.js" type="text/javascript"></script>
-  <script type="text/javascript">
-  var _gameId = "<?php echo $_GET["id"]; ?>",
-      nnc = "<?php echo $nnc; ?>";
-  </script>
-  <!--[if lt IE 9]>
-  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-  <![endif]-->
-  <style type="text/css" media="screen">
-    
-  </style>
-</head>
+
 <body>
   <div class="row-fluid title">
     <header>

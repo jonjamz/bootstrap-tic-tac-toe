@@ -7,7 +7,7 @@ header {
   margin-left: 10px;
 }
 body {
-  background: url(http://subtlepatterns.com/patterns/tex2res2.png);
+  background: url(/styles/tex2res2.png);
 }
 .dropdown-menu {
   display: none;
