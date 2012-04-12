@@ -26,6 +26,21 @@ body {
   width: 100%;
   display: none;
 }
+.big-alert {
+  height: 35px;
+  line-height: 35px;
+  font-size: 16px;
+  background: rgba(255,255,255,0.3);
+  text-align: center;
+  font-weight: 700;
+  color: #FCD116;
+  position: fixed;
+  bottom: 25px;
+  left: 0px;
+  right: 0px;
+  width: 100%;
+  display: none;
+}
 .color-choices a {
   border-radius: 6px;
   -moz-border-radius: 6px;

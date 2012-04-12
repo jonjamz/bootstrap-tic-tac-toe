@@ -85,7 +85,8 @@ $(document).ready(function () {
       addState[dtsq] = player;
       $.extend(boardState, addState);
     });
-    console.log("turn has been changed to " + turn);
+    console.log("Turn has been changed to " + turn);
+    turn = 2;
     playerTurn();
   }
   // Push board updates to the DOM after a server response
@@ -142,6 +143,15 @@ $(document).ready(function () {
       .stop(true, true)
       .fadeIn(1000)
       .html(message)
+      .delay(2000);
+  }
+  function showAlert(message) {
+    $(".big-alert")
+      .stop(true, true)
+      .fadeIn()
+      .html(message)
+      .delay(3000)
+      .fadeOut();
   }
   // Messages about whose turn it is
   function playerTurn() {
@@ -166,25 +176,30 @@ $(document).ready(function () {
   /*  GAME TRIGGERS
    *  =============================== */
   $(".game-container").on("click", ".sq", function() {
-    if (spectator === 0) {
-      if (turn === 1) {
-        if (myColorClass !== undefined) {
-          if ($(this).attr("data-taken") !== "taken") {
-            claimSquare($(this).attr("data-sq"));
-            pushBoard();
-            turn = 2;
+    if (gameOver === 0) {
+      if (spectator === 0) {
+        if (turn === 1) {
+          if (myColorClass !== undefined) {
+            if ($(this).attr("data-taken") !== "taken") {
+              claimSquare($(this).attr("data-sq"));
+              pushBoard();
+              turn = 2;
+            }
+            else {
+              showAlert("Square taken!");
+            }
           }
           else {
-            showMessage("Square taken!");
+            showAlert("Please choose a color!");
           }
         }
         else {
-          showMessage("Please choose a color!");
+          showAlert("It's not your turn!");
         }
       }
-      else {
-        showMessage("It's not your turn!");
-      }
+    }
+    else {
+      showAlert("The game is over! Don't be greedy!");
     }
     return false;
   });
@@ -193,12 +208,13 @@ $(document).ready(function () {
     if (spectator === 0) {
       var colorKey = $(this).attr("data-colorKey");
       if(colorClasses[colorKey] === oppColorClass) {
-        showMessage("Can't take the opponent's color!");
+        showAlert("Can't take the opponent's color!");
       }
       else {
         claimColor(colorKey);
       }
     }
+    $(".dropdown-toggle").trigger("click");
     return false;
   });
   // Change name variable on key up
@@ -264,7 +280,7 @@ $(document).ready(function () {
         myState = data.player_1_state;
         oppState = data.player_2_state;
         if (data.player_2_state.type === "1" && lastPlayer === 0 && spectator === 0) {
-          showMessage("Player 2 has entered the game!");
+          showAlert("Player 2 has entered the game!");
           lastPlayer = 1;
         }
       }
@@ -289,8 +305,8 @@ $(document).ready(function () {
           turn = 0;
         }
       }
-      // Show message about whose turn it is
-      if (firstPoll === 0) {
+      // Show turn info if the game is running
+      if (gameOver === 0) {
         playerTurn();
       }
       // Establish colors for both players 
