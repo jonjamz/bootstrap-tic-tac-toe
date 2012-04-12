@@ -50,6 +50,7 @@ include 'header.php';
     </div>
   </div>
   <div class="message"></div>
+  <div class="big-alert"></div>
 <script type="text/javascript" src="/scripts/ttt.js"></script>
 </body>
 </html>
