@@ -289,10 +289,8 @@ $(document).ready(function () {
           turn = 0;
         }
       }
-      // Show message if it's just become the current user's turn
-      if (myState.turn === "1" && lastTurn === 0) {
-        playerTurn();
-      }
+      // Show message about whose turn it is
+      playerTurn();
       // Establish colors for both players 
       if (oppState.color) {
       	oppColorClass = oppState.color;
@@ -357,7 +355,7 @@ $(document).ready(function () {
     else if (data.hash) {
       // Start polling if the game exists, figure out player status
       if (data.player === "first") {
-        //--> Do nothing, type is already 0!
+        //--> Do nothing
       }
       else if (data.player === "second") {
         type = 1;
