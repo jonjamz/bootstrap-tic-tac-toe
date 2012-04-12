@@ -1,0 +1,39 @@
+.row-fluid {
+  margin-bottom: 2.127659574%;
+}
+header {
+  min-height: 50px;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+body {
+  background: url(http://subtlepatterns.com/patterns/tex2res2.png);
+}
+.dropdown-menu {
+  display: none;
+}
+.message {
+  height: 25px;
+  line-height: 25px;
+  background: rgba(255,255,255,0.3);
+  text-align: center;
+  font-weight: 700;
+  color: #ff0000;
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  width: 100%;
+  display: none;
+}
+.color-choices a {
+  border-radius: 6px;
+  -moz-border-radius: 6px;
+  -webkit-border-radius: 6px;
+  margin: 3px 5px;
+  color: #ccc;
+}
+#debug {
+  font-size: 10px;
+  margin-right: 10px;
+}

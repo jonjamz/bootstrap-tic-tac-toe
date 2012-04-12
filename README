@@ -1,0 +1,6 @@
+Install on Nginx:
+
+1. Put the files on your server
+2. Add this rewrite in the designated conf file: rewrite ^/game/(.*)$ /game.php?id=$1 last;
+3. Add your db connect info into awesome.php
+4. Play the game with a friend!
