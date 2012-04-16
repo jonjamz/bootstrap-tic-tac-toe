@@ -5,7 +5,7 @@ $(document).ready(function () {
   /*  Disable AJAX caching  */
   $.ajaxSetup({ cache: false });
   //---------------------------------
-  /*  SET VARS AND SOME DEFAULTS
+  /*  SET PROPERTIES AND SOME DEFAULTS
    *  turn = 1, it's your turn. 0, it's the other person's turn. 2, flag to switch turns
    *  type = 1, you're x. 0, you're o
    *  boardState is a JSON array of the board as it is played
@@ -22,27 +22,28 @@ $(document).ready(function () {
    *  spectator lets you watch without being able to play
    *  firstPoll turns to 1 after the first poll
    *  =============================== */
-  var debug = 0,
-    turn,
-    type = 0,
-    boardState = {},
-    userState = {},
-    time = 1000,
-    myXo,
-    oppXo,
-    curSquare,
-    myColorClass = undefined,
-    oppColorClass,
-    myUserName = undefined,
-    oppUserName = "Opponent",
-    myState,
-    oppState,
-    command,
-    lastTurn,
-    lastPlayer = 0,
-    gameOver = 0,
-    spectator = 0,
-    firstPoll = 0;
+  var params = {
+    debug: 0,
+    turn: undefined,
+    type: 0,
+    boardState: {},
+    userState: {},
+    myXo: undefined,
+    oppXo: undefined,
+    curSquare: false,
+    myColorClass: undefined,
+    oppColorClass: undefined,
+    myUserName: undefined,
+    oppUserName: "Opponent",
+    myState: undefined,
+    oppState: undefined,
+    command: undefined,
+    lastTurn: undefined,
+    lastPlayer: 0,
+    gameOver: 0,
+    spectator: 0,
+    firstPoll: 0
+  };
   // Colors as Bootstrap CSS Classes
   var colorClasses = {
     first:  "btn btn-primary", 
@@ -66,38 +67,37 @@ $(document).ready(function () {
    *  spectate() sets up the environment for spectator mode
    *  =============================== */
   function makeXo() {
-    if (type === 0) {
-      myXo = "o"; 
-      oppXo = "x";
+    if (params.type === 0) {
+      params.myXo = "o"; 
+      params.oppXo = "x";
     }
     else {
-      myXo = "x"; 
-      oppXo = "o";
+      params.myXo = "x"; 
+      params.oppXo = "o";
     }
   }
   // Serialize the current state of the board in a var
   function pushBoard() {
     var player, dtsq, addState = {};
-    boardState = {};
+    params.boardState = {};
     $('div.sq[data-taken="taken"]').each(function() {
       dtsq = $(this).attr("data-sq");
       player = $(this).attr("data-xo");
       addState[dtsq] = player;
-      $.extend(boardState, addState);
+      $.extend(params.boardState, addState);
     });
-    console.log("Turn has been changed to " + turn);
-    turn = 2;
+    console.log("Turn has been changed to " + params.turn);
     playerTurn();
   }
   // Push board updates to the DOM after a server response
   function updateBoard() {
     var whoColorClass;
-    $.each(boardState, function(i, val) {
-      if (val === myXo) {
-        whoColorClass = myColorClass;
+    $.each(params.boardState, function(i, val) {
+      if (val === params.myXo) {
+        whoColorClass = params.myColorClass;
       }
       else {
-        whoColorClass = oppColorClass;
+        whoColorClass = params.oppColorClass;
       }
       curSquare = $('div[data-sq="' + i + '"]');
       curSquare.attr("class", "span3 sq " + whoColorClass);
@@ -108,34 +108,40 @@ $(document).ready(function () {
   }
   // Serialize the state of the current user
   function pushUser() {
-    userState = {};
-    userState = { player: nnc, username: myUserName, type: type, turn: turn, color: myColorClass };
+    params.userState = {};
+    params.userState = { 
+      player: nnc, 
+      username: params.myUserName, 
+      type: params.type, 
+      turn: params.turn, 
+      color: params.myColorClass 
+    };
   }
   // Take a square during a turn
   function claimSquare(sq) {
     curSquare = $('[data-sq="' + sq + '"]');
-    curSquare.addClass(myColorClass);
-    curSquare.attr("data-xo", myXo);
+    curSquare.addClass(params.myColorClass);
+    curSquare.attr("data-xo", params.myXo);
     curSquare.attr("data-taken","taken");
   }
   // Push the current user's chosen color to the DOM
   function claimColor(key) {
-    myColorClass = colorClasses[key];
-    $("#your-name").attr("class", myColorClass);
-    $('[data-xo="' + myXo + '"]').attr("class", "span3 sq " + myColorClass);
+    params.myColorClass = colorClasses[key];
+    $("#your-name").attr("class", params.myColorClass);
+    $('[data-xo="' + params.myXo + '"]').attr("class", "span3 sq " + params.myColorClass);
   }
   // Update the current user's color when received from db
   function updateColor() {
-    $("#your-name").attr("class", myColorClass);
-    $("#opponent-name").attr("class", oppColorClass);
+    $("#your-name").attr("class", params.myColorClass);
+    $("#opponent-name").attr("class", params.oppColorClass);
   }
   // Add an opponent's updated username to the DOM
   function addOppUserName() {
-    $("#opponent-name").val(oppUserName);
+    $("#opponent-name").val(params.oppUserName);
   }
   // Add current user's updated username to the DOM
   function addMyUserName() {
-    $("#your-name").val(myUserName);
+    $("#your-name").val(params.myUserName);
   }
   // Show and fade an alert box with message
   function showMessage(message) {
@@ -156,18 +162,18 @@ $(document).ready(function () {
   // Messages about whose turn it is
   function playerTurn() {
     var message;
-    if (turn === 1) {
+    if (params.turn === 1) {
       message = "It's your turn!";
     }
     else {
-      message = "It's " + oppUserName + "'s turn!";
+      message = "It's " + params.oppUserName + "'s turn!";
     }
     showMessage(message);
   }
   // Initiate spectator mode
   function spectate() {
-    spectator = 1;
-    turn = 0;
+    params.spectator = 1;
+    params.turn = 0;
     showMessage("You are a spectator");
     $("#choose-color").remove();
     $("#your-name").attr("disabled", "disabled");
@@ -176,26 +182,25 @@ $(document).ready(function () {
   /*  GAME TRIGGERS
    *  =============================== */
   $(".game-container").on("click", ".sq", function() {
-    if (gameOver === 0) {
-      if (spectator === 0) {
-        if (turn === 1) {
-          if (myColorClass !== undefined) {
-            if ($(this).attr("data-taken") !== "taken") {
-              claimSquare($(this).attr("data-sq"));
-              pushBoard();
-              turn = 2;
-            }
-            else {
-              showAlert("Square taken!");
-            }
+    if (params.gameOver === 0 && params.spectator === 0) {
+      if (params.turn === 1) {
+        if (params.myColorClass !== undefined) {
+          if ($(this).attr("data-taken") !== "taken") {
+            params.turn = 2;
+            soundManager.play("clickSquare");
+            claimSquare($(this).attr("data-sq"));
+            pushBoard();
           }
           else {
-            showAlert("Please choose a color!");
+            showAlert("Square taken!");
           }
         }
         else {
-          showAlert("It's not your turn!");
+          showAlert("Please choose a color!");
         }
+      }
+      else {
+        showAlert("It's not your turn!");
       }
     }
     else {
@@ -205,9 +210,9 @@ $(document).ready(function () {
   });
   // Claim a color if not taken
   $(".color-choices").on("click", "a", function() {
-    if (spectator === 0) {
+    if (params.spectator === 0) {
       var colorKey = $(this).attr("data-colorKey");
-      if(colorClasses[colorKey] === oppColorClass) {
+      if(colorClasses[colorKey] === params.oppColorClass) {
         showAlert("Can't take the opponent's color!");
       }
       else {
@@ -219,17 +224,17 @@ $(document).ready(function () {
   });
   // Change name variable on key up
   $("#your-name").keyup(function() {
-    if (spectator === 0) {
-      myUserName = $(this).val();
+    if (params.spectator === 0) {
+      params.myUserName = $(this).val();
     }
   });
   // Debug toggle
   $("#debug").click(function() {
-    if (debug === 0) {
-      debug = 1;
+    if (params.debug === 0) {
+      params.debug = 1;
     }
     else if (debug === 1) {
-      debug = 0;
+      params.debug = 0;
     }
   });
   //---------------------------------
@@ -237,127 +242,130 @@ $(document).ready(function () {
    *  =============================== */
   function poll() {
     // Serialize user info into a variable to send
-    if (firstPoll === 1) {
+    if (params.firstPoll === 1) {
       pushUser();
     }
     // Add current turn state to lastTurn
-    lastTurn = turn;
+    params.lastTurn = params.turn;
     // If it's your turn, it's ok to post board updates
-    if (turn === 1 && spectator === 0) {
-      command = "update";
+    if (params.turn === 1 && params.spectator === 0) {
+      params.command = "update";
     }
     // If you just went, this flags to change turns
-    else if (turn === 2 && spectator === 0) {
-      command = "switch";
+    else if (params.turn === 2 && params.spectator === 0) {
+      params.command = "switch";
     }
     // Is it spectator mode?
-    else if (spectator === 1) {
-      command = "spectate";
+    else if (params.spectator === 1) {
+      params.command = "spectate";
     }
     // If it's not your turn, just receive
     else {
-      command = "request";
+      params.command = "request";
     }
     $.post("/awesome.php", { 
-      command: command, 
+      command: params.command, 
       hash: _gameId, 
-      userState: userState, 
-      boardState: boardState, 
+      userState: params.userState, 
+      boardState: params.boardState, 
       nnc: nnc 
     },
     function(data) {
-      if (debug === 1) {
-        console.log("i am player " + type);
-        console.log("turn is " + turn);
-        console.log("command is " + command);
-        console.log("spectator is " + spectator);
+      if (params.debug === 1) {
+        console.log("i am player " + params.type);
+        console.log("turn is " + params.turn);
+        console.log("command is " + params.command);
+        console.log("spectator is " + params.spectator);
         console.log(JSON.stringify(data));
       }
       // If our type is 0, player_1_state is the current user's 
       // and player_2_state is the opponent's
       // and vice versa
-      if (type === 0) {
-        myState = data.player_1_state;
-        oppState = data.player_2_state;
-        if (data.player_2_state.type === "1" && lastPlayer === 0 && spectator === 0) {
+      if (params.type === 0) {
+        params.myState = data.player_1_state;
+        params.oppState = data.player_2_state;
+        // If the second player has certain properties, and lastPlayer is 0
+        // They just entered, so show an alert and play a sound
+        if (data.player_2_state.type === "1" && params.lastPlayer === 0 && params.spectator === 0) {
           showAlert("Player 2 has entered the game!");
-          lastPlayer = 1;
+          soundManager.togglePause("enterGame");
+          params.lastPlayer = 1;
         }
       }
-      else if (type === 1) {
-        myState = data.player_2_state;
-        oppState = data.player_1_state;
+      else if (params.type === 1) {
+        params.myState = data.player_2_state;
+        params.oppState = data.player_1_state;
       }
       // Update turn
-      if (myState.turn) {
-        if (myState.turn === "2" || spectator === 1) {
-          turn = 0;
+      if (params.myState.turn) {
+        if (params.myState.turn === "2" || params.spectator === 1) {
+          params.turn = 0;
         }
         else {
-          turn = myState.turn*1;
+          params.turn = params.myState.turn*1;
         }
       } 
       else {
-        if (type === 0 && spectator === 0) {
-          turn = 1;
+        if (params.type === 0 && params.spectator === 0) {
+          params.turn = 1;
         } 
         else {
-          turn = 0;
+          params.turn = 0;
         }
       }
       // Show turn info if the game is running
-      if (gameOver === 0) {
+      if (params.gameOver === 0) {
         playerTurn();
       }
       // Establish colors for both players 
-      if (oppState.color) {
-      	oppColorClass = oppState.color;
+      if (params.oppState.color) {
+      	params.oppColorClass = params.oppState.color;
       }
-      if (myState.color) {
-        if (myColorClass === undefined) {
-          myColorClass = myState.color;
+      if (params.myState.color) {
+        if (params.myColorClass === undefined) {
+          params.myColorClass = params.myState.color;
         }
       }
       // Push everything to the board
       if (data.board_state) {
-        boardState = {};
-        $.extend(boardState, data.board_state);
+        params.boardState = {};
+        $.extend(params.boardState, data.board_state);
         updateBoard();
       }
       // Update names
-      if (oppState.username) {
-      	oppUserName = oppState.username;
+      if (params.oppState.username) {
+      	params.oppUserName = params.oppState.username;
         addOppUserName();
       }
-      if (myState.username) {
-        if (myUserName === undefined) {
-          myUserName = myState.username;
+      if (params.myState.username) {
+        if (params.myUserName === undefined) {
+          params.myUserName = params.myState.username;
           addMyUserName();
         }
-        else if (myUserName !== myState.username) {
+        else if (params.myUserName !== params.myState.username) {
           //--> Do nothing
         }
       }
       // If there's a winner, end the game
       if (data.winner === "0" || data.winner === "1") {
         var winnerName;
-        if ((type === 0 && data.winner === "0") || (type === 1 && data.winner === "1")) {
-          winnerName = myUserName;
+        if ((params.type === 0 && data.winner === "0") || (params.type === 1 && data.winner === "1")) {
+          winnerName = params.myUserName;
         } else {
-          winnerName = oppUserName;
+          winnerName = params.oppUserName;
         }
-        if (gameOver === 0) {
+        if (params.gameOver === 0) {
           showMessage("Game over! " + winnerName + " has won the match!");
         }
-        gameOver = 1;
+        params.gameOver = 1;
       }
     }, "json");
     // Start it all over again if the game's not over!
-    if (gameOver === 0) {
+    if (params.gameOver === 0) {
       setTimeout(poll,time);
     }
     // Set firstPoll
-    firstPoll = 1;
+    params.firstPoll = 1;
   }
   // On landing, check if the game exists, and if there is already a player. 
   // If the game doesn't exist, display error and return to home page
@@ -376,7 +384,7 @@ $(document).ready(function () {
         //--> Do nothing
       }
       else if (data.player === "second") {
-        type = 1;
+        params.type = 1;
       }
       else if (data.player === "third") {
         // Redirect home
@@ -385,9 +393,8 @@ $(document).ready(function () {
         // Start spectator mode
         spectate();
       }
-      // Make xo
+      // Assign x or o, start AJAX polling
       makeXo();
-      // Start polling the db, bruh!
       poll();
     }
   }, "json");

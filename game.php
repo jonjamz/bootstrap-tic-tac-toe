@@ -51,6 +51,26 @@ include 'header.php';
   </div>
   <div class="message"></div>
   <div class="big-alert"></div>
+<script type="text/javascript" src="/scripts/soundmanager2-jsmin.js"></script>
+<script type="text/javascript">
+soundManager.url = '/scripts/soundmanager2-swf/';
+soundManager.useHTML5Audio = true;
+soundManager.onready(function(){
+  soundManager.createSound({
+    id: 'clickSquare',
+    url: '/sounds/select.mp3',
+    autoLoad: true
+  });
+  soundManager.createSound({
+    id: 'enterGame',
+    url: '/sounds/mak.mp3',
+    autoLoad: true
+  });
+});
+soundManager.ontimeout(function(){
+  alert("Sounds disabled due to an error.");
+});
+</script>
 <script type="text/javascript" src="/scripts/ttt.js"></script>
 </body>
 </html>

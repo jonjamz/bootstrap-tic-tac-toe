@@ -19,7 +19,8 @@ $_SESSION["nnc"] = $nnc;
   <script src="/scripts/bootstrap.min.js" type="text/javascript"></script>
   <script type="text/javascript">
   var _gameId = "<?php echo $_GET["id"]; ?>",
-  nnc = "<?php echo $nnc; ?>";
+  nnc = "<?php echo $nnc; ?>",
+  time = 1000; // Speed of AJAX polling
   </script>
   <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
