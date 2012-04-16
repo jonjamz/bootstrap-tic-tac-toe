@@ -288,7 +288,7 @@ $(document).ready(function () {
         // They just entered, so show an alert and play a sound
         if (data.player_2_state.type === "1" && params.lastPlayer === 0 && params.spectator === 0) {
           showAlert("Player 2 has entered the game!");
-          soundManager.togglePause("enterGame");
+          soundManager.play("enterGame");
           params.lastPlayer = 1;
         }
       }
